@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+  server_hello:
+    image: tigase/tigase-xmpp-server:8.0.0
+    ports:
+      - "8480:8080"
+      - "5422:5222"
+    environment:
+      - DB_ROOT_USER=admin
+      - DB_ROOT_PASS=admin
+      - ADMIN_JID=admin@server_hello 
+      - ADMIN_PASSWORD=admin
+    volumes:
+      - ./tigase/config/tigase.conf:/home/tigase/tigase-server/etc/tigase.conf
+      - ./tigase/config/config.tdsl:/home/tigase/tigase-server/etc/config.tdsl
+    extra_hosts:
+      - "server_hello:127.0.0.1"
+
+
+
+  spade_hello:
+    image: spade_hello:latest
+    build: .
+    deploy:
+      resources:
+        limits:
+          cpus: 1.0
+          memory: 512MB
