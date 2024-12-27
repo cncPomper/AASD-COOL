@@ -30,10 +30,6 @@ class TrafficLightControllerAgent(Agent):
         """
         Periodic behaviour just for simulation.
         """
-        def __init__(self, agent, period, start_at=None):
-            super().__init__(period, start_at)
-            self.agent = agent
-
         async def run(self):
             if not self.agent.controlled_by_manager:
                 curr_light: TrafficLight = self.agent.physical_traffic_light.get_traffic_light()
@@ -43,23 +39,19 @@ class TrafficLightControllerAgent(Agent):
                     self.agent.physical_traffic_light.set_traffic_light(new_light)
                     self.agent.traffic_light_last_changed = datetime.datetime.now()
                     logging.info(
-                        f"Traffic light with ID {self.agent.physical_traffic_light.id} changed from {curr_light} to {new_light}"
+                        f"[TRAFFIC_LIGHT {self.agent.physical_traffic_light.id}] Traffic light with ID {self.agent.physical_traffic_light.id} changed from {curr_light} to {new_light}"
                     )
             else:
                 if datetime.datetime.now() - self.agent.traffic_light_last_changed > datetime.timedelta(
                     seconds=self.agent.CONTROLLED_BY_MANAGER_TIMEOUT
                 ):
                     logging.info(
-                        f"Traffic light with ID {self.agent.physical_traffic_light.id} exceeded timeout of controlled by manager. Going back to auto control."
+                        f"[TRAFFIC_LIGHT {self.agent.physical_traffic_light.id}] Traffic light with ID {self.agent.physical_traffic_light.id} exceeded timeout of controlled by manager. Going back to auto control."
                     )
                     self.agent.controlled_by_manager = False
                     self.agent.traffic_light_last_changed = datetime.datetime.now()
 
     class SendTrafficLightState(PeriodicBehaviour):
-        def __init__(self, agent, period, start_at=None):
-            super().__init__(period, start_at)
-            self.agent = agent
-
         async def run(self):
             msg = Message(to=f"navigation_manager@{SERVER_ADDRESS}")
             msg_body: str = json.dumps(
@@ -79,10 +71,6 @@ class TrafficLightControllerAgent(Agent):
             "traffic_light": <RED/GREEN/...>
         }
         """
-        def __init__(self, agent):
-            super().__init__()
-            self.agent = agent
-
         async def run(self):
             while 1:
                 msg = await self.receive(timeout=10)
@@ -91,21 +79,42 @@ class TrafficLightControllerAgent(Agent):
                 msg_json = json.loads(msg.body)
                 new_traffic_light_state: TrafficLight = TrafficLight[msg_json["traffic_light"]]
                 logging.info(
-                    f"Traffic light with ID {self.agent.physical_traffic_light.id} is now controlled by manager. Current state: {new_traffic_light_state}"
+                    f"[TRAFFIC_LIGHT {self.agent.physical_traffic_light.id}] Traffic light with ID {self.agent.physical_traffic_light.id} is now controlled by manager. Current state: {new_traffic_light_state}"
                 )
                 self.agent.physical_traffic_light.set_traffic_light(new_traffic_light_state)
                 self.agent.traffic_light_last_changed = datetime.datetime.now()
                 self.agent.controlled_by_manager = True
 
+    class SendTrafficLightStateOnRequest(OneShotBehaviour):
+        async def run(self):
+            while 1:
+                msg = await self.receive(timeout=10)
+                if not msg:
+                    continue
+                msg = Message(to=f"vehicle_simulator@{SERVER_ADDRESS}")
+                msg_body: str = json.dumps(
+                    {
+                        "traffic_light": self.agent.physical_traffic_light.get_traffic_light().value,
+                    }
+                )
+                msg.body = msg_body
+                msg.set_metadata("msg_type", "send_traffic_light_on_request")
+                await self.send(msg)
+
     async def setup(self):
-        b1 = self.ChangeTrafficLight(self, period=0.1)
+        b1 = self.ChangeTrafficLight(period=0.1)
 
         t2 = Template()
         t2.set_metadata("msg_type", "set_traffic_light")
-        b2 = self.SetTrafficLightState(self)
+        b2 = self.SetTrafficLightState()
 
-        b3 = self.SendTrafficLightState(self, period=0.5)
+        b3 = self.SendTrafficLightState(period=0.5)
+
+        t4 = Template()
+        t4.set_metadata("msg_type", "get_traffic_light_request")
+        b4 = self.SendTrafficLightStateOnRequest()
 
         self.add_behaviour(b1)
         self.add_behaviour(b2, t2)
         self.add_behaviour(b3)
+        self.add_behaviour(b4, t4)

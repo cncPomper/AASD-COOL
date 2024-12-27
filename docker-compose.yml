@@ -20,9 +20,13 @@ services:
 
   spade_hello:
     image: spade_hello:latest
-    build: .
+    build:
+      dockerfile: Dockerfile
     deploy:
       resources:
         limits:
-          cpus: 1.0
+          cpus: 2.0
           memory: 512MB
+    volumes:
+      - ./data/graph.json:/app/data/graph.json
+      - ./data/traffic_lights.json:/app/data/traffic_lights.json

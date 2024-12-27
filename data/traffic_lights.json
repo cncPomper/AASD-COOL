@@ -1,0 +1,13 @@
+{
+    "lights": 
+    [
+        {
+            "id": 1,
+            "default": "RED",
+            "red_time": 5,
+            "yellow_time": 1,
+            "green_time": 5,
+            "red_yellow_time": 2
+        }
+    ] 
+}

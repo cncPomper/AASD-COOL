@@ -1,2 +1,2 @@
-spade
-networkx  # for graphs representing roads structure
+spade==3.3.3  # version 4.x is not working for some reason XD
+networkx
