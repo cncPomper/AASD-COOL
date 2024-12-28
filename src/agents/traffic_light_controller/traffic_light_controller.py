@@ -91,7 +91,7 @@ class TrafficLightControllerAgent(Agent):
                 msg = await self.receive(timeout=10)
                 if not msg:
                     continue
-                msg = Message(to=f"vehicle_simulator@{SERVER_ADDRESS}")
+                msg = Message(to=f"vehicle_navigator@{SERVER_ADDRESS}")
                 msg_body: str = json.dumps(
                     {
                         "traffic_light": self.agent.physical_traffic_light.get_traffic_light().value,
@@ -108,7 +108,7 @@ class TrafficLightControllerAgent(Agent):
         t2.set_metadata("msg_type", "set_traffic_light")
         b2 = self.SetTrafficLightState()
 
-        b3 = self.SendTrafficLightState(period=0.5)
+        b3 = self.SendTrafficLightState(period=1)
 
         t4 = Template()
         t4.set_metadata("msg_type", "get_traffic_light_request")

@@ -5,6 +5,7 @@ from src.agents.traffic_light_controller.traffic_light_controller import Traffic
 from src.agents.traffic_light_controller.physical_traffic_light import PhysicalTrafficLight
 from src.agents.navigation_manager.navigation_manager import NavigatorManagerAgent
 from src.agents.vehicle_navigator.vehicle_simulator import VehicleSimulator
+from src.agents.vehicle_navigator.vehicle_navigator import VehicleNavigator
 from src.utils import load_graph, load_lights
 
 from src.config import SERVER_ADDRESS, PASSWORD
@@ -25,10 +26,12 @@ async def main():
     graph: nx.Graph = load_graph("data/graph.json")
     start_node: str = graph.start_node
     finish_node: str = graph.finish_node
-    vehicle_simulator_agent = VehicleSimulator(f"vehicle_simulator@{SERVER_ADDRESS}", PASSWORD, graph, start_node, finish_node)
-    await vehicle_simulator_agent.start(auto_register=True)
+    vehicle_simulator = VehicleSimulator(graph, start_node, finish_node)
 
-    await spade.wait_until_finished(vehicle_simulator_agent)
+    vehicle_navigator_agent = VehicleNavigator(f"vehicle_navigator@{SERVER_ADDRESS}", PASSWORD, vehicle_simulator)
+    await vehicle_navigator_agent.start(auto_register=True)
+
+    await spade.wait_until_finished(vehicle_navigator_agent)
     for ag in traffic_lights_agents:
         await ag.stop()
     await manager_agent.stop()

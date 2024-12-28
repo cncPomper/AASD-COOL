@@ -6,7 +6,7 @@
         {
             "node1": "A",
             "node2": "B",
-            "distance": 10,
+            "distance": 50,
             "traffic_light_id": null
         },
         {
@@ -18,13 +18,13 @@
         {
             "node1": "C",
             "node2": "D",
-            "distance": 5,
+            "distance": 25,
             "traffic_light_id": 1
         },
         {
             "node1": "B",
             "node2": "D",
-            "distance": 10,
+            "distance": 50,
             "traffic_light_id": null
         }
     ]
