@@ -7,7 +7,7 @@ from spade.behaviour import PeriodicBehaviour, OneShotBehaviour
 from spade.message import Message
 from ...config import SERVER_ADDRESS
 from .physical_traffic_light import PhysicalTrafficLight
-from .messages import TrafficLight
+from .messages import TrafficLight, TrafficLightProtocols
 import datetime
 import json
 
@@ -26,6 +26,8 @@ class TrafficLightControllerAgent(Agent):
         self.controlled_by_manager: bool = False  # whether current state is controlled by navigator manager
         self.CONTROLLED_BY_MANAGER_TIMEOUT = 10  # seconds
 
+    #Periodically changes the traffic light state if not controlled by a manager. If controlled by a manager, 
+    # it checks if the timeout has been exceeded and reverts to auto control if necessary.
     class ChangeTrafficLight(PeriodicBehaviour):
         """
         Periodic behaviour just for simulation.
@@ -51,6 +53,7 @@ class TrafficLightControllerAgent(Agent):
                     self.agent.controlled_by_manager = False
                     self.agent.traffic_light_last_changed = datetime.datetime.now()
 
+    #Periodically sends the current state of the traffic light to the navigation manager agent.
     class SendTrafficLightState(PeriodicBehaviour):
         async def run(self):
             msg = Message(to=f"navigation_manager@{SERVER_ADDRESS}")
@@ -61,9 +64,11 @@ class TrafficLightControllerAgent(Agent):
                 }
             )
             msg.body = msg_body
-            msg.set_metadata("msg_type", "send_traffic_light")
+            msg.set_metadata("msg_type", TrafficLightProtocols.SEND_TRAFFIC_LIGHT)
             await self.send(msg)
 
+    #Waits for a message to set the traffic light state. When a message is received, 
+    # it updates the traffic light state and sets the controlled_by_manager flag to True.
     class SetTrafficLightState(OneShotBehaviour):
         """
         Expected message
@@ -85,6 +90,7 @@ class TrafficLightControllerAgent(Agent):
                 self.agent.traffic_light_last_changed = datetime.datetime.now()
                 self.agent.controlled_by_manager = True
 
+    #Waits for a request message and sends the current traffic light state to the vehicle navigator agent.
     class SendTrafficLightStateOnRequest(OneShotBehaviour):
         async def run(self):
             while 1:
@@ -98,18 +104,25 @@ class TrafficLightControllerAgent(Agent):
                     }
                 )
                 msg.body = msg_body
-                msg.set_metadata("msg_type", "send_traffic_light_on_request")
+                msg.set_metadata("msg_type", TrafficLightProtocols.SEND_TRAFFIC_LIGHT_ON_REQUEST)
                 await self.send(msg)
 
     async def setup(self):
+        # We are not setting any metadata on this behaviour because
+        #it runs periodically and does not depend on incoming messages
         b1 = self.ChangeTrafficLight(period=0.1)
 
+        # This behaviour is associated with the message type "set_traffic_light"
+        # it will handle messages that have message_type set to "set_traffic_light"
         t2 = Template()
         t2.set_metadata("msg_type", "set_traffic_light")
         b2 = self.SetTrafficLightState()
 
+        # This behavior does not have any specific metadata because it runs periodically 
+        # and sends the traffic light state to the navigation manager.
         b3 = self.SendTrafficLightState(period=1)
 
+        # This behaviour is associated with the message type "get_traffic_light_request"
         t4 = Template()
         t4.set_metadata("msg_type", "get_traffic_light_request")
         b4 = self.SendTrafficLightStateOnRequest()

@@ -1,5 +1,8 @@
 from enum import Enum
 
+class TrafficLightProtocols(Enum):
+    SEND_TRAFFIC_LIGHT = "send_traffic_light"
+    SEND_TRAFFIC_LIGHT_ON_REQUEST = "send_traffic_light_on_request"
 
 class TrafficLight(Enum):
     RED = "RED"

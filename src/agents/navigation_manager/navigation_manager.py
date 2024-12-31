@@ -2,19 +2,21 @@ import asyncio
 import logging
 
 logging.getLogger().setLevel(logging.INFO)
+from agents.road_condition_reporter.road_condition_protocols import RoadConditionProtocols
 from spade.agent import Agent
 from spade.template import Template
 from spade.behaviour import OneShotBehaviour
 from spade.message import Message
 from ...config import SERVER_ADDRESS
 import json
-from src.agents.traffic_light_controller.messages import TrafficLight
+from src.agents.traffic_light_controller.messages import TrafficLight, TrafficLightProtocols
 
 
 class NavigatorManagerAgent(Agent):
     def __init__(self, jid, password, verify_security=False):
         super().__init__(jid, password, verify_security)
         self.traffic_light_states: dict[int, TrafficLight] = {}
+        self.graph_with_road_conditions = None
 
     class SetTrafficLightState(OneShotBehaviour):
         async def run(self):
@@ -74,15 +76,31 @@ class NavigatorManagerAgent(Agent):
                     continue
                 msg = Message(f"vehicle_navigator@{SERVER_ADDRESS}")
                 msg.set_metadata("msg_type", "route_response")
-                route = ["A", "C", "D"]
+                # should find the shortest and quickest path from the existing graph
+                #TEMPORARY solution
+                route = ["A", "C", "D"] 
                 msg.body = json.dumps({"route": route})
                 logging.info(f"[NAVIGATION MANAGER] Generated route: {route}")
                 await self.send(msg)
 
+    class ReceiveRoadCondition(OneShotBehaviour):
+        async def run(self):
+            while 1:
+                msg = await self.receive(timeout=10)
+                if not msg:
+                    continue
+                msg_json = json.loads(msg.body)
+                updated_graph = msg_json["updated_graph"]
+                logging.info(f"[NAVIGATION MANAGER] Received road condition: {updated_graph}")
+
     async def setup(self):
+        b0 = self.ReceiveRoadCondition()
+        t0 = Template()
+        t0.set_metadata("msg_type", RoadConditionProtocols.REQUEST_ROAD_CONDITION)
+
         b1 = self.AwaitTrafficLightState()
         t1 = Template()
-        t1.set_metadata("msg_type", "send_traffic_light")
+        t1.set_metadata("msg_type", TrafficLightProtocols.SEND_TRAFFIC_LIGHT)
 
         b2 = self.SetTrafficLightState()
 
@@ -94,6 +112,7 @@ class NavigatorManagerAgent(Agent):
         t4 = Template()
         t4.set_metadata("msg_type", "send_vehicle_position")
 
+        self.add_behaviour(b0, t0)
         self.add_behaviour(b1, t1)
         self.add_behaviour(b2)
         self.add_behaviour(b3, t3)

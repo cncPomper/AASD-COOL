@@ -1,3 +1,4 @@
+from agents.additional_alerting_system.road_condition_reporter import RoadConditionReporter
 import spade
 import traceback
 import networkx as nx
@@ -20,10 +21,14 @@ async def main():
         )
     for ag in traffic_lights_agents:
         await ag.start(auto_register=True)
+    
+    graph: nx.Graph = load_graph("data/graph.json")
+    road_condition_reporter = RoadConditionReporter(f"road_condition_reporter@{SERVER_ADDRESS}", PASSWORD, graph)
+    await road_condition_reporter.start(auto_register=True)
+
     manager_agent = NavigatorManagerAgent(f"navigation_manager@{SERVER_ADDRESS}", PASSWORD)
     await manager_agent.start(auto_register=True)
 
-    graph: nx.Graph = load_graph("data/graph.json")
     start_node: str = graph.start_node
     finish_node: str = graph.finish_node
     vehicle_simulator = VehicleSimulator(graph, start_node, finish_node)

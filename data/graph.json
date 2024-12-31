@@ -1,7 +1,7 @@
 {
-    "nodes": ["A", "B", "C", "D"],
+    "nodes": ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"],
     "start_node": "A",
-    "finish_node": "D",
+    "finish_node": "J",
     "edges": [
         {
             "node1": "A",
@@ -16,15 +16,81 @@
             "traffic_light_id": null
         },
         {
-            "node1": "C",
+            "node1": "B",
             "node2": "D",
-            "distance": 25,
+            "distance": 30,
             "traffic_light_id": 1
         },
         {
-            "node1": "B",
+            "node1": "C",
             "node2": "D",
-            "distance": 50,
+            "distance": 25,
+            "traffic_light_id": 2
+        },
+        {
+            "node1": "C",
+            "node2": "E",
+            "distance": 10,
+            "traffic_light_id": null
+        },
+        {
+            "node1": "D",
+            "node2": "F",
+            "distance": 20,
+            "traffic_light_id": 3
+        },
+        {
+            "node1": "E",
+            "node2": "F",
+            "distance": 15,
+            "traffic_light_id": null
+        },
+        {
+            "node1": "E",
+            "node2": "G",
+            "distance": 25,
+            "traffic_light_id": 4
+        },
+        {
+            "node1": "F",
+            "node2": "H",
+            "distance": 10,
+            "traffic_light_id": null
+        },
+        {
+            "node1": "G",
+            "node2": "H",
+            "distance": 20,
+            "traffic_light_id": 5
+        },
+        {
+            "node1": "G",
+            "node2": "I",
+            "distance": 30,
+            "traffic_light_id": null
+        },
+        {
+            "node1": "H",
+            "node2": "J",
+            "distance": 15,
+            "traffic_light_id": 6
+        },
+        {
+            "node1": "I",
+            "node2": "J",
+            "distance": 10,
+            "traffic_light_id": null
+        },
+        {
+            "node1": "B",
+            "node2": "E",
+            "distance": 35,
+            "traffic_light_id": null
+        },
+        {
+            "node1": "D",
+            "node2": "G",
+            "distance": 40,
             "traffic_light_id": null
         }
     ]
