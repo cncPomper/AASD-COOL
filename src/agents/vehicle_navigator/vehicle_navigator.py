@@ -1,7 +1,7 @@
 import logging
 
 logging.getLogger().setLevel(logging.INFO)
-from agents.traffic_light_controller.messages import TrafficLightProtocols
+from src.agents.traffic_light_controller.messages import TrafficLightProtocols
 from spade.agent import Agent
 from spade.behaviour import PeriodicBehaviour
 from spade.message import Message
@@ -14,13 +14,17 @@ import json
 class VehicleNavigator(Agent):
     def __init__(
         self,
-        jid,
-        password,
+        jid: str,
+        password: str,
         simulator: VehicleSimulator,
-        verify_security=False,
+        target_node: str,
+        vehicle_id: int,
+        verify_security: bool = False,
     ):
         super().__init__(jid, password, verify_security)
         self.simulator = simulator
+        self.target_node = target_node
+        self.vehicle_id = vehicle_id
 
     class UpdateVehiclePosition(PeriodicBehaviour):
         """
@@ -32,11 +36,16 @@ class VehicleNavigator(Agent):
             if result == "STOP":
                 await self.agent.stop()
 
-    # Periodically sends a message to the navigation manager to request a route. 
+    # Periodically sends a message to the navigation manager to request a route.
     # When a response is received, it updates the vehicle's plan with the received route.
     class RequestRoute(PeriodicBehaviour):
         async def run(self):
             msg = Message(f"navigation_manager@{SERVER_ADDRESS}")
+            msg_body = {
+                "target": self.agent.target_node,
+                "vehicle_id": self.agent.vehicle_id,
+            }
+            msg.body = json.dumps(msg_body)
             msg.set_metadata("msg_type", "send_route")
             await self.send(msg)
             msg = await self.receive(timeout=1)
@@ -45,7 +54,7 @@ class VehicleNavigator(Agent):
                 logging.info(f"[VEHICLE NAVIGATOR] Received route: {route} from manager.")
                 self.agent.simulator.plan = route
 
-    # Periodically sends the current vehicle position 
+    # Periodically sends the current vehicle position
     # to the navigation manager if the vehicle is on an edge.
     class SendPosition(PeriodicBehaviour):
         async def run(self):
@@ -54,6 +63,7 @@ class VehicleNavigator(Agent):
                 msg_body = {
                     "node1": self.agent.simulator.vehicle_edge[0],
                     "node2": self.agent.simulator.vehicle_edge[1],
+                    "vehicle_id": self.agent.vehicle_id,
                 }
                 msg.body = json.dumps(msg_body)
                 msg.set_metadata("msg_type", "send_vehicle_position")
@@ -67,9 +77,9 @@ class VehicleNavigator(Agent):
         # being associated with send traffic light on request message.
         b2 = self.UpdateVehiclePosition(period=0.1)
         t2 = Template()
-        t2.set_metadata("msg_type", TrafficLightProtocols.SEND_TRAFFIC_LIGHT_ON_REQUEST)
+        t2.set_metadata("msg_type", TrafficLightProtocols.SEND_TRAFFIC_LIGHT_ON_REQUEST.value)
 
-        # This periodic behavior sends a message to the navigation manager to request a route. 
+        # This periodic behavior sends a message to the navigation manager to request a route.
         # When a response is received, it updates the vehicle's navigation plan.
         b3 = self.RequestRoute(period=1)
         t3 = Template()

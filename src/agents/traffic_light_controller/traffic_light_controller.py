@@ -26,7 +26,7 @@ class TrafficLightControllerAgent(Agent):
         self.controlled_by_manager: bool = False  # whether current state is controlled by navigator manager
         self.CONTROLLED_BY_MANAGER_TIMEOUT = 10  # seconds
 
-    #Periodically changes the traffic light state if not controlled by a manager. If controlled by a manager, 
+    #Periodically changes the traffic light state if not controlled by a manager. If controlled by a manager,
     # it checks if the timeout has been exceeded and reverts to auto control if necessary.
     class ChangeTrafficLight(PeriodicBehaviour):
         """
@@ -64,7 +64,7 @@ class TrafficLightControllerAgent(Agent):
                 }
             )
             msg.body = msg_body
-            msg.set_metadata("msg_type", TrafficLightProtocols.SEND_TRAFFIC_LIGHT)
+            msg.set_metadata("msg_type", TrafficLightProtocols.SEND_TRAFFIC_LIGHT.value)
             await self.send(msg)
 
     #Waits for a message to set the traffic light state. When a message is received, 
@@ -104,7 +104,7 @@ class TrafficLightControllerAgent(Agent):
                     }
                 )
                 msg.body = msg_body
-                msg.set_metadata("msg_type", TrafficLightProtocols.SEND_TRAFFIC_LIGHT_ON_REQUEST)
+                msg.set_metadata("msg_type", TrafficLightProtocols.SEND_TRAFFIC_LIGHT_ON_REQUEST.value)
                 await self.send(msg)
 
     async def setup(self):

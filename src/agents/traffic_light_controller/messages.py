@@ -1,10 +1,10 @@
 from enum import Enum
 
-class TrafficLightProtocols(Enum):
+class TrafficLightProtocols(str, Enum):
     SEND_TRAFFIC_LIGHT = "send_traffic_light"
     SEND_TRAFFIC_LIGHT_ON_REQUEST = "send_traffic_light_on_request"
 
-class TrafficLight(Enum):
+class TrafficLight(str, Enum):
     RED = "RED"
     GREEN = "GREEN"
     YELLOW = "YELLOW"

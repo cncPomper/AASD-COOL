@@ -3,7 +3,47 @@
     [
         {
             "id": 1,
-            "default": "RED",
+            "default": "GREEN",
+            "red_time": 5,
+            "yellow_time": 1,
+            "green_time": 5,
+            "red_yellow_time": 2
+        },
+        {
+            "id": 2,
+            "default": "GREEN",
+            "red_time": 5,
+            "yellow_time": 1,
+            "green_time": 5,
+            "red_yellow_time": 2
+        },
+        {
+            "id": 3,
+            "default": "GREEN",
+            "red_time": 5,
+            "yellow_time": 1,
+            "green_time": 5,
+            "red_yellow_time": 2
+        },
+        {
+            "id": 4,
+            "default": "GREEN",
+            "red_time": 5,
+            "yellow_time": 1,
+            "green_time": 5,
+            "red_yellow_time": 2
+        },
+        {
+            "id": 5,
+            "default": "GREEN",
+            "red_time": 5,
+            "yellow_time": 1,
+            "green_time": 5,
+            "red_yellow_time": 2
+        },
+        {
+            "id": 6,
+            "default": "GREEN",
             "red_time": 5,
             "yellow_time": 1,
             "green_time": 5,

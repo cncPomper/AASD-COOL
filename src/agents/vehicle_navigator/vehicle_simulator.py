@@ -47,11 +47,10 @@ class VehicleSimulator:
 
     async def step(self, behav):
         plan = copy.deepcopy(self.plan)
-        if not plan:
+        if not plan or len(plan) <= 2:
             return
-        assert len(plan) > 2
         if self.vehicle_edge is None:
-            assert plan[0] == self.start_node
+            # assert plan[0] == self.start_node
             self.vehicle_edge = (plan[0], plan[1])
         else:
             idx = plan.index(self.vehicle_edge[0])

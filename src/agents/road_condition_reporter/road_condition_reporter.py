@@ -1,8 +1,7 @@
-import asyncio
 import logging
 
 logging.getLogger().setLevel(logging.INFO)
-from agents.road_condition_reporter.road_condition_protocols import RoadConditionProtocols
+from src.agents.road_condition_reporter.road_condition_protocols import RoadConditionProtocols
 from spade.agent import Agent
 from spade.template import Template
 from spade.behaviour import OneShotBehaviour
@@ -10,6 +9,7 @@ from spade.message import Message
 from ...config import SERVER_ADDRESS
 import json
 import networkx as nx
+
 
 class RoadConditionReporter(Agent):
     def __init__(self, jid, password, graph: nx.Graph, verify_security=False):
@@ -28,12 +28,12 @@ class RoadConditionReporter(Agent):
 
     class SendRoadCondition(OneShotBehaviour):
         async def run(self):
-             while 1:
+            while 1:
                 msg = await self.receive(timeout=10)
                 if not msg:
                     continue
                 msg = Message(f"navigation_manager@{SERVER_ADDRESS}")
-                msg.set_metadata("msg_type", RoadConditionProtocols.REQUEST_ROAD_CONDITION)
+                msg.set_metadata("msg_type", RoadConditionProtocols.REQUEST_ROAD_CONDITION.value)
                 # invoke a method that will return the road condition
                 updated_graph_with_busy_edges = self.agent.mark_busy_edges()
                 #not sure if the networkx graph is serialized -> to be confirmed
@@ -43,8 +43,5 @@ class RoadConditionReporter(Agent):
     async def setup(self):
         behaviourSendRoadCondition = self.SendRoadCondition()
         templateSendRoadCondition = Template()
-        templateSendRoadCondition.set_metadata("msg_type", RoadConditionProtocols.SEND_ROAD_CONDITION)
+        templateSendRoadCondition.set_metadata("msg_type", RoadConditionProtocols.SEND_ROAD_CONDITION.value)
         self.add_behaviour(behaviourSendRoadCondition, templateSendRoadCondition)
-
-        
-
