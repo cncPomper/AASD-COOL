@@ -30,13 +30,26 @@ class VehicleNavigator(Agent):
 
     class UpdateVehiclePosition(PeriodicBehaviour):
         """
-        just for simulation of vehicle movement
-        """
+            Simulation of the movement and provide info to VisualizationAgent
 
+        """
         async def run(self):
-            result = await self.agent.simulator.step(self)
-            if result == "STOP":
+            vehicle_edge, vehicle_position_in_edge, status = await self.agent.simulator.step(self)
+            logging.info(f"[VEHICLE NAVIGATOR] Vehicle {self.agent.vehicle_id} is at edge {vehicle_edge} at position {vehicle_position_in_edge} - status: {status}")
+            if status == "STOP":
                 await self.agent.stop()
+
+            if vehicle_edge is not None and vehicle_position_in_edge is not None:
+                # Send position update to the visualiation agent
+                logging.info(f"[VEHICLE NAVIGATOR] Sending position update to visualization agent.")
+                position_update_msg = Message(to=f"visualizer@{SERVER_ADDRESS}")
+                position_update_msg.set_metadata("msg_type", "vehicle_position_update_response")
+                position_update_msg.body = json.dumps({
+                    "vehicle_id": self.agent.vehicle_id,
+                    "current_edge": vehicle_edge,
+                    "position_on_edge": vehicle_position_in_edge
+                })
+                await self.send(position_update_msg)
 
     # Periodically sends a message to the navigation manager to request a route.
     # When a response is received, it updates the vehicle's plan with the received route.

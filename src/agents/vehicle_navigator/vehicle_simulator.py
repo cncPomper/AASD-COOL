@@ -1,13 +1,11 @@
-import logging
-
-logging.getLogger().setLevel(logging.INFO)
-from spade.message import Message
-from ...config import SERVER_ADDRESS
-from src.agents.traffic_light_controller.messages import TrafficLight
-import networkx as nx
 import json
-from typing import Tuple, Union
+import logging
 import copy
+from spade.message import Message
+from src.config import SERVER_ADDRESS
+from src.agents.traffic_light_controller.messages import TrafficLight
+from typing import Tuple, Union
+import networkx as nx
 
 
 class VehicleSimulator:
@@ -20,7 +18,7 @@ class VehicleSimulator:
         self.start_node: str = start_node
         self.finish_node: str = finish_node
         self.vehicle_edge: Tuple[str, str] = None  # tuple of nodes
-        self.graph: nx.G = graph
+        self.graph: nx.Graph = graph
         self.plan: Union[None, list[str]] = None
         self.vehicle_speed_per_second = 3  # units per second
         self.vehicle_position_in_edge: float = 0
@@ -48,7 +46,7 @@ class VehicleSimulator:
     async def step(self, behav):
         plan = copy.deepcopy(self.plan)
         if not plan or len(plan) <= 2:
-            return
+            return None, None, None
         if self.vehicle_edge is None:
             # assert plan[0] == self.start_node
             self.vehicle_edge = (plan[0], plan[1])
@@ -66,7 +64,7 @@ class VehicleSimulator:
         if self.vehicle_position_in_edge >= edge_length:  # time to change edge
             if self.finish_node == self.vehicle_edge[1]:
                 logging.info(f"[VEHICLE SIMULATOR] Reached finish node {self.finish_node}. Stopping simulation.")
-                return "STOP"
+                return self.vehicle_edge, self.vehicle_position_in_edge, "STOP"
             if await self.check_green_light(plan[1], plan[2], behav):  # wait for green light
                 logging.info(f"[VEHICLE SIMULATOR] Changing edge from {self.vehicle_edge} to {(plan[1], plan[2])}")
                 self.vehicle_position_in_edge = 0
@@ -75,3 +73,4 @@ class VehicleSimulator:
                 logging.info(
                     f"[VEHICLE SIMULATOR] Waiting for green light to change edge from {self.vehicle_edge} to {(plan[1], plan[2])}"
                 )
+        return self.vehicle_edge, self.vehicle_position_in_edge, "IN_PROGRESS"

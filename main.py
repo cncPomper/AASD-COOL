@@ -9,6 +9,7 @@ from src.agents.navigation_manager.navigation_manager import NavigatorManagerAge
 from src.agents.vehicle_navigator.vehicle_simulator import VehicleSimulator
 from src.agents.vehicle_navigator.vehicle_navigator import VehicleNavigator
 from src.agents.additional_alerting_system.additional_alerting_agent import AdditionalAlertingAgent
+from src.agents.visualization.visualization_agent import VisualizerAgent
 from src.utils import load_graph, load_lights
 
 from src.config import SERVER_ADDRESS, PASSWORD
@@ -53,6 +54,9 @@ async def main():
     
     additional_alerting_agent = AdditionalAlertingAgent(f"additional_alerting_agent@{SERVER_ADDRESS}", PASSWORD, graph)
     await additional_alerting_agent.start(auto_register=True)
+
+    visualizer_agent = VisualizerAgent(f"visualizer@{SERVER_ADDRESS}", PASSWORD, graph)
+    await visualizer_agent.start(auto_register=True)
     
     for agent in vehicle_navigators:
         await agent.start(auto_register=True)
