@@ -81,6 +81,7 @@ class TrafficLightControllerAgent(Agent):
                 msg = await self.receive(timeout=10)
                 if not msg:
                     continue
+                logging.info(f"[TRAFFIC_LIGHT] Received request for setting traffic light state: {msg}")
                 msg_json = json.loads(msg.body)
                 new_traffic_light_state: TrafficLight = TrafficLight[msg_json["traffic_light"]]
                 logging.info(

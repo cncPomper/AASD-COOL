@@ -15,7 +15,7 @@ def load_graph(path: str) -> networkx.Graph:
     for node in data["nodes"]:
         g.add_node(node)
     for edge in data["edges"]:
-        g.add_edge(edge["node1"], edge["node2"], traffic_light_id=edge["traffic_light_id"], distance=edge["distance"])
+        g.add_edge(edge["node1"], edge["node2"], traffic_light_id=edge["traffic_light_id"], distance=edge["distance"], cost=edge["cost"], id=edge['id'],)
     g.start_node = data["start_node"]
     g.finish_node = data["finish_node"]
     return g

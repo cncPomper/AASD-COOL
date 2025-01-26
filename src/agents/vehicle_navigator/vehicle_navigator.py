@@ -20,11 +20,13 @@ class VehicleNavigator(Agent):
         target_node: str,
         vehicle_id: int,
         verify_security: bool = False,
+        isEmergency: bool = False,
     ):
         super().__init__(jid, password, verify_security)
         self.simulator = simulator
         self.target_node = target_node
         self.vehicle_id = vehicle_id
+        self.isEmergency = isEmergency
 
     class UpdateVehiclePosition(PeriodicBehaviour):
         """
@@ -44,6 +46,7 @@ class VehicleNavigator(Agent):
             msg_body = {
                 "target": self.agent.target_node,
                 "vehicle_id": self.agent.vehicle_id,
+                "isEmergency": self.agent.isEmergency,
             }
             msg.body = json.dumps(msg_body)
             msg.set_metadata("msg_type", "send_route")
@@ -51,7 +54,8 @@ class VehicleNavigator(Agent):
             msg = await self.receive(timeout=1)
             if msg is not None:
                 route: list[str] = json.loads(msg.body)["route"]
-                logging.info(f"[VEHICLE NAVIGATOR] Received route: {route} from manager.")
+                vehicleType = " Emergency" if self.agent.isEmergency else " Normal"
+                logging.info(f"[VEHICLE NAVIGATOR{vehicleType}] Received route: {route} from manager.")
                 self.agent.simulator.plan = route
 
     # Periodically sends the current vehicle position
@@ -64,6 +68,7 @@ class VehicleNavigator(Agent):
                     "node1": self.agent.simulator.vehicle_edge[0],
                     "node2": self.agent.simulator.vehicle_edge[1],
                     "vehicle_id": self.agent.vehicle_id,
+                    "isEmergency": self.agent.isEmergency,
                 }
                 msg.body = json.dumps(msg_body)
                 msg.set_metadata("msg_type", "send_vehicle_position")
