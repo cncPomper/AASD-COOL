@@ -1,0 +1,7 @@
+aasd-venv
+.vscode
+**/__pycache__
+.venv
+bin/
+/lib
+pyvenv.cfg
